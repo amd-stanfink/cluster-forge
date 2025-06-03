@@ -1,0 +1,31 @@
+---
+apiVersion: gateway.kgateway.dev/v1alpha1
+kind: HTTPListenerPolicy
+metadata:
+  name: access-logs
+  namespace: kgateway-system
+spec:
+  accessLog:
+    - fileSink:
+        jsonFormat:
+          authority: '%REQ(:AUTHORITY)%'
+          backendCluster: '%UPSTREAM_CLUSTER%'
+          backendHost: '%UPSTREAM_HOST%'
+          bytes_received: '%BYTES_RECEIVED%'
+          bytes_sent: '%BYTES_SENT%'
+          method: '%REQ(X-ENVOY-ORIGINAL-METHOD?:METHOD)%'
+          path: '%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%'
+          protocol: '%PROTOCOL%'
+          req_x_forwarded_for: '%REQ(X-FORWARDED-FOR)%'
+          request_id: '%REQ(X-REQUEST-ID)%'
+          resp_backend_service_time: '%RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%'
+          response_code: '%RESPONSE_CODE%'
+          response_flags: '%RESPONSE_FLAGS%'
+          start_time: '%START_TIME%'
+          total_duration: '%DURATION%'
+          user_agent: '%REQ(USER-AGENT)%'
+        path: /dev/stdout
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: https

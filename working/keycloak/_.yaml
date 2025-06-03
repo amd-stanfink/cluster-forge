@@ -1,0 +1,28 @@
+---
+auth:
+  adminUser: admin
+database:
+  database: keycloak
+  existingSecret: keycloak-db-credentials
+  host: keycloak-db-postgresql
+  port: 5432
+  username: keycloak
+  vendor: postgres
+ingress:
+  enabled: false
+metadata:
+  name: ""
+  namespace: keycloak
+persistence:
+  dbStorageClass: standard
+  deployPostgres: true
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 500m
+    memory: 512Mi
+service:
+  port: 8080
+  type: ClusterIP

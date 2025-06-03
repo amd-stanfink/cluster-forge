@@ -1,0 +1,14 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kueue-minio-tenant-reader
+rules:
+  - apiGroups:
+      - minio.min.io
+    resources:
+      - tenants
+    verbs:
+      - get
+      - list
+      - watch

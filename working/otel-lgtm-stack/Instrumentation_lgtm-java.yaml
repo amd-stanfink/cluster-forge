@@ -1,0 +1,21 @@
+---
+apiVersion: opentelemetry.io/v1alpha1
+kind: Instrumentation
+metadata:
+  name: lgtm-java
+  namespace: otel-lgtm-stack
+spec:
+  exporter:
+    endpoint: http://lgtm.lgtm-stack.svc.cluster.local:4318
+  java:
+    env:
+      - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
+        value: http/protobuf
+      - name: OTEL_EXPORTER_OTLP_METRICS_PROTOCOL
+        value: http/protobuf
+  propagators:
+    - tracecontext
+    - baggage
+  sampler:
+    argument: "1"
+    type: parentbased_traceidratio

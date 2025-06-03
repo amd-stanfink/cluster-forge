@@ -1,0 +1,103 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.17.2
+    helm.sh/resource-policy: keep
+  name: subscriptions.postgresql.cnpg.io
+spec:
+  group: postgresql.cnpg.io
+  names:
+    kind: Subscription
+    listKind: SubscriptionList
+    plural: subscriptions
+    singular: subscription
+  scope: Namespaced
+  versions:
+    - additionalPrinterColumns:
+        - jsonPath: .metadata.creationTimestamp
+          name: Age
+          type: date
+        - jsonPath: .spec.cluster.name
+          name: Cluster
+          type: string
+        - jsonPath: .spec.name
+          name: PG Name
+          type: string
+        - jsonPath: .status.applied
+          name: Applied
+          type: boolean
+        - jsonPath: .status.message
+          name: Message
+          type: string
+      name: v1
+      schema:
+        openAPIV3Schema:
+          properties:
+            apiVersion:
+              type: string
+            kind:
+              type: string
+            metadata:
+              type: object
+            spec:
+              properties:
+                cluster:
+                  properties:
+                    name:
+                      default: ""
+                      type: string
+                  type: object
+                  x-kubernetes-map-type: atomic
+                dbname:
+                  type: string
+                  x-kubernetes-validations:
+                    - message: dbname is immutable
+                      rule: self == oldSelf
+                externalClusterName:
+                  type: string
+                name:
+                  type: string
+                  x-kubernetes-validations:
+                    - message: name is immutable
+                      rule: self == oldSelf
+                parameters:
+                  additionalProperties:
+                    type: string
+                  type: object
+                publicationDBName:
+                  type: string
+                publicationName:
+                  type: string
+                subscriptionReclaimPolicy:
+                  default: retain
+                  enum:
+                    - delete
+                    - retain
+                  type: string
+              required:
+                - cluster
+                - dbname
+                - externalClusterName
+                - name
+                - publicationName
+              type: object
+            status:
+              properties:
+                applied:
+                  type: boolean
+                message:
+                  type: string
+                observedGeneration:
+                  format: int64
+                  type: integer
+              type: object
+          required:
+            - metadata
+            - spec
+          type: object
+      served: true
+      storage: true
+      subresources:
+        status: {}

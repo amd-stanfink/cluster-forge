@@ -1,0 +1,427 @@
+---
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: otel-collector-metrics
+  namespace: otel-lgtm-stack
+spec:
+  config:
+    exporters:
+      debug:
+        verbosity: detailed
+      otlp:
+        endpoint: http://lgtm-stack.otel-lgtm-stack.svc.cluster.local:4317
+        tls:
+          insecure: true
+      otlphttp/ops-mimir:
+        auth:
+          authenticator: basicauth/mimir-tenant
+        endpoint: http://otel-collector-metric-proxy.headscale.svc.cluster.local/otlp
+        headers:
+          X-Scope-OrgID: oci-clusters
+        tls:
+          insecure: true
+    extensions:
+      basicauth/mimir-tenant:
+        client_auth:
+          password: cluster-forge-mimir-test-pass
+          username: cluster-forge-mimir-test-user
+    processors:
+      attributes:
+        actions:
+          - action: insert
+            key: k8s_cluster_name
+            value: cluster-name
+      batch:
+        send_batch_size: 2000
+        timeout: 10s
+      memory_limiter:
+        check_interval: 5s
+        limit_percentage: 80
+        spike_limit_percentage: 25
+    receivers:
+      prometheus:
+        config:
+          scrape_configs:
+            - bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+              job_name: kubernetes-apiservers
+              kubernetes_sd_configs:
+                - role: endpoints
+              relabel_configs:
+                - action: keep
+                  regex: default;kubernetes;https
+                  source_labels:
+                    - __meta_kubernetes_namespace
+                    - __meta_kubernetes_service_name
+                    - __meta_kubernetes_endpoint_port_name
+              scheme: https
+              tls_config:
+                ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+                insecure_skip_verify: true
+            - bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+              job_name: kubernetes-nodes
+              kubernetes_sd_configs:
+                - role: node
+              relabel_configs:
+                - action: labelmap
+                  regex: __meta_kubernetes_node_label_(.+)
+                - replacement: kubernetes.default.svc:443
+                  target_label: __address__
+                - regex: (.+)
+                  replacement: /api/v1/nodes/$1/proxy/metrics
+                  source_labels:
+                    - __meta_kubernetes_node_name
+                  target_label: __metrics_path__
+              scheme: https
+              tls_config:
+                ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+                insecure_skip_verify: true
+            - bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+              job_name: kubernetes-nodes-cadvisor
+              kubernetes_sd_configs:
+                - role: node
+              relabel_configs:
+                - action: labelmap
+                  regex: __meta_kubernetes_node_label_(.+)
+                - replacement: kubernetes.default.svc:443
+                  target_label: __address__
+                - regex: (.+)
+                  replacement: /api/v1/nodes/$1/proxy/metrics/cadvisor
+                  source_labels:
+                    - __meta_kubernetes_node_name
+                  target_label: __metrics_path__
+              scheme: https
+              tls_config:
+                ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+                insecure_skip_verify: true
+            - honor_labels: true
+              job_name: kubernetes-service-endpoints
+              kubernetes_sd_configs:
+                - role: endpoints
+              relabel_configs:
+                - action: keep
+                  regex: true
+                  source_labels:
+                    - __meta_kubernetes_service_annotation_prometheus_io_scrape
+                - action: drop
+                  regex: true
+                  source_labels:
+                    - __meta_kubernetes_service_annotation_prometheus_io_scrape_slow
+                - action: replace
+                  regex: (https?)
+                  source_labels:
+                    - __meta_kubernetes_service_annotation_prometheus_io_scheme
+                  target_label: __scheme__
+                - action: replace
+                  regex: (.+)
+                  source_labels:
+                    - __meta_kubernetes_service_annotation_prometheus_io_path
+                  target_label: __metrics_path__
+                - action: replace
+                  regex: (.+?)(?::\d+)?;(\d+)
+                  replacement: $1:$2
+                  source_labels:
+                    - __address__
+                    - __meta_kubernetes_service_annotation_prometheus_io_port
+                  target_label: __address__
+                - action: labelmap
+                  regex: __meta_kubernetes_service_annotation_prometheus_io_param_(.+)
+                  replacement: __param_$1
+                - action: labelmap
+                  regex: __meta_kubernetes_service_label_(.+)
+                - action: replace
+                  source_labels:
+                    - __meta_kubernetes_namespace
+                  target_label: namespace
+                - action: replace
+                  source_labels:
+                    - __meta_kubernetes_service_name
+                  target_label: service
+                - action: replace
+                  source_labels:
+                    - __meta_kubernetes_pod_node_name
+                  target_label: node
+            - honor_labels: true
+              job_name: kubernetes-service-endpoints-slow
+              kubernetes_sd_configs:
+                - role: endpoints
+              relabel_configs:
+                - action: keep
+                  regex: true
+                  source_labels:
+                    - __meta_kubernetes_service_annotation_prometheus_io_scrape_slow
+                - action: replace
+                  regex: (https?)
+                  source_labels:
+                    - __meta_kubernetes_service_annotation_prometheus_io_scheme
+                  target_label: __scheme__
+                - action: replace
+                  regex: (.+)
+                  source_labels:
+                    - __meta_kubernetes_service_annotation_prometheus_io_path
+                  target_label: __metrics_path__
+                - action: replace
+                  regex: (.+?)(?::\d+)?;(\d+)
+                  replacement: $1:$2
+                  source_labels:
+                    - __address__
+                    - __meta_kubernetes_service_annotation_prometheus_io_port
+                  target_label: __address__
+                - action: labelmap
+                  regex: __meta_kubernetes_service_annotation_prometheus_io_param_(.+)
+                  replacement: __param_$1
+                - action: labelmap
+                  regex: __meta_kubernetes_service_label_(.+)
+                - action: replace
+                  source_labels:
+                    - __meta_kubernetes_namespace
+                  target_label: namespace
+                - action: replace
+                  source_labels:
+                    - __meta_kubernetes_service_name
+                  target_label: service
+                - action: replace
+                  source_labels:
+                    - __meta_kubernetes_pod_node_name
+                  target_label: node
+              scrape_interval: 5m
+              scrape_timeout: 30s
+            - honor_labels: true
+              job_name: prometheus-pushgateway
+              kubernetes_sd_configs:
+                - role: service
+              relabel_configs:
+                - action: keep
+                  regex: pushgateway
+                  source_labels:
+                    - __meta_kubernetes_service_annotation_prometheus_io_probe
+            - honor_labels: true
+              job_name: kubernetes-services
+              kubernetes_sd_configs:
+                - role: service
+              metrics_path: /probe
+              params:
+                module:
+                  - http_2xx
+              relabel_configs:
+                - action: keep
+                  regex: true
+                  source_labels:
+                    - __meta_kubernetes_service_annotation_prometheus_io_probe
+                - source_labels:
+                    - __address__
+                  target_label: __param_target
+                - replacement: blackbox
+                  target_label: __address__
+                - source_labels:
+                    - __param_target
+                  target_label: instance
+                - action: labelmap
+                  regex: __meta_kubernetes_service_label_(.+)
+                - source_labels:
+                    - __meta_kubernetes_namespace
+                  target_label: namespace
+                - source_labels:
+                    - __meta_kubernetes_service_name
+                  target_label: service
+            - honor_labels: true
+              job_name: kubernetes-pods
+              kubernetes_sd_configs:
+                - role: pod
+              relabel_configs:
+                - action: keep
+                  regex: true
+                  source_labels:
+                    - __meta_kubernetes_pod_annotation_prometheus_io_scrape
+                - action: drop
+                  regex: true
+                  source_labels:
+                    - __meta_kubernetes_pod_annotation_prometheus_io_scrape_slow
+                - action: replace
+                  regex: (https?)
+                  source_labels:
+                    - __meta_kubernetes_pod_annotation_prometheus_io_scheme
+                  target_label: __scheme__
+                - action: replace
+                  regex: (.+)
+                  source_labels:
+                    - __meta_kubernetes_pod_annotation_prometheus_io_path
+                  target_label: __metrics_path__
+                - action: replace
+                  regex: (\d+);(([A-Fa-f0-9]{1,4}::?){1,7}[A-Fa-f0-9]{1,4})
+                  replacement: '[$2]:$1'
+                  source_labels:
+                    - __meta_kubernetes_pod_annotation_prometheus_io_port
+                    - __meta_kubernetes_pod_ip
+                  target_label: __address__
+                - action: replace
+                  regex: (\d+);((([0-9]+?)(\.|$)){4})
+                  replacement: $2:$1
+                  source_labels:
+                    - __meta_kubernetes_pod_annotation_prometheus_io_port
+                    - __meta_kubernetes_pod_ip
+                  target_label: __address__
+                - action: labelmap
+                  regex: __meta_kubernetes_pod_annotation_prometheus_io_param_(.+)
+                  replacement: __param_$1
+                - action: labelmap
+                  regex: __meta_kubernetes_pod_label_(.+)
+                - action: replace
+                  source_labels:
+                    - __meta_kubernetes_namespace
+                  target_label: namespace
+                - action: replace
+                  source_labels:
+                    - __meta_kubernetes_pod_name
+                  target_label: pod
+                - action: drop
+                  regex: Pending|Succeeded|Failed|Completed
+                  source_labels:
+                    - __meta_kubernetes_pod_phase
+                - action: replace
+                  source_labels:
+                    - __meta_kubernetes_pod_node_name
+                  target_label: node
+            - honor_labels: true
+              job_name: kubernetes-pods-slow
+              kubernetes_sd_configs:
+                - role: pod
+              relabel_configs:
+                - action: keep
+                  regex: true
+                  source_labels:
+                    - __meta_kubernetes_pod_annotation_prometheus_io_scrape_slow
+                - action: replace
+                  regex: (https?)
+                  source_labels:
+                    - __meta_kubernetes_pod_annotation_prometheus_io_scheme
+                  target_label: __scheme__
+                - action: replace
+                  regex: (.+)
+                  source_labels:
+                    - __meta_kubernetes_pod_annotation_prometheus_io_path
+                  target_label: __metrics_path__
+                - action: replace
+                  regex: (\d+);(([A-Fa-f0-9]{1,4}::?){1,7}[A-Fa-f0-9]{1,4})
+                  replacement: '[$2]:$1'
+                  source_labels:
+                    - __meta_kubernetes_pod_annotation_prometheus_io_port
+                    - __meta_kubernetes_pod_ip
+                  target_label: __address__
+                - action: replace
+                  regex: (\d+);((([0-9]+?)(\.|$)){4})
+                  replacement: $2:$1
+                  source_labels:
+                    - __meta_kubernetes_pod_annotation_prometheus_io_port
+                    - __meta_kubernetes_pod_ip
+                  target_label: __address__
+                - action: labelmap
+                  regex: __meta_kubernetes_pod_annotation_prometheus_io_param_(.+)
+                  replacement: __param_$1
+                - action: labelmap
+                  regex: __meta_kubernetes_pod_label_(.+)
+                - action: replace
+                  source_labels:
+                    - __meta_kubernetes_namespace
+                  target_label: namespace
+                - action: replace
+                  source_labels:
+                    - __meta_kubernetes_pod_name
+                  target_label: pod
+                - action: drop
+                  regex: Pending|Succeeded|Failed|Completed
+                  source_labels:
+                    - __meta_kubernetes_pod_phase
+                - action: replace
+                  source_labels:
+                    - __meta_kubernetes_pod_node_name
+                  target_label: node
+              scrape_interval: 5m
+              scrape_timeout: 30s
+            - job_name: otel-collector
+              scrape_interval: 5s
+              static_configs:
+                - targets:
+                    - localhost:8888
+            - dns_sd_configs:
+                - names:
+                    - opencost-prometheus-opencost-exporter.monitoring
+                  port: 9003
+                  type: A
+              honor_labels: true
+              job_name: opencost
+              metrics_path: /metrics
+              scheme: http
+              scrape_interval: 1m
+              scrape_timeout: 10s
+            - job_name: gpu-operator-metrics-exporter
+              kubernetes_sd_configs:
+                - role: node
+              metrics_path: /metrics
+              relabel_configs:
+                - action: keep
+                  regex: true
+                  source_labels:
+                    - __meta_kubernetes_node_label_feature_node_kubernetes_io_amd_gpu
+                - regex: (.+)
+                  replacement: $1:32500
+                  source_labels:
+                    - __meta_kubernetes_node_address_InternalIP
+                  target_label: __address__
+                - source_labels:
+                    - __meta_kubernetes_node_name
+                  target_label: hostname
+            - job_name: minio-cluster-metrics
+              metrics_path: /minio/v2/metrics/cluster
+              scheme: http
+              static_configs:
+                - targets:
+                    - minio.minio-tenant-default.svc.cluster.local
+            - job_name: minio-bucket-metrics
+              metrics_path: /minio/v2/metrics/bucket
+              scheme: http
+              static_configs:
+                - targets:
+                    - minio.minio-tenant-default.svc.cluster.local
+            - job_name: minio-resource-metrics
+              metrics_path: /minio/v2/metrics/resource
+              scheme: http
+              static_configs:
+                - targets:
+                    - minio.minio-tenant-default.svc.cluster.local
+            - job_name: argocd
+              metrics_path: /metrics
+              scheme: http
+              static_configs:
+                - targets:
+                    - argocd-metrics.argocd.svc.cluster.local:8082
+                    - argocd-applicationset-controller.argocd.svc.cluster.local:8080
+                    - argocd-repo-server.argocd.svc.cluster.local:8084
+    service:
+      extensions:
+        - basicauth/mimir-tenant
+      pipelines:
+        metrics:
+          exporters:
+            - otlp
+            - otlphttp/ops-mimir
+          processors:
+            - memory_limiter
+            - batch
+            - attributes
+          receivers:
+            - prometheus
+  image: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.113.0
+  mode: deployment
+  podAnnotations:
+    prometheus.io/port: "8888"
+    prometheus.io/scrape: "true"
+  replicas: 1
+  resources:
+    limits:
+      cpu: "2"
+      memory: 8Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+  serviceAccount: otel-collector

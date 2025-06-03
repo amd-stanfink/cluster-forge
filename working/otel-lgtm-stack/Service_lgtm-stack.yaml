@@ -1,0 +1,26 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lgtm-stack
+  namespace: otel-lgtm-stack
+spec:
+  ports:
+    - name: grafana
+      port: 3000
+      protocol: TCP
+      targetPort: 3000
+    - name: otel-grpc
+      port: 4317
+      protocol: TCP
+      targetPort: 4317
+    - name: otel-http
+      port: 4318
+      protocol: TCP
+      targetPort: 4318
+    - name: prometheus
+      port: 9090
+      protocol: TCP
+      targetPort: 9090
+  selector:
+    app: lgtm

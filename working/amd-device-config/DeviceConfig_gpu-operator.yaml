@@ -1,0 +1,26 @@
+---
+apiVersion: amd.com/v1alpha1
+kind: DeviceConfig
+metadata:
+  name: gpu-operator
+  namespace: kube-amd-gpu
+spec:
+  devicePlugin:
+    devicePluginImage: rocm/k8s-device-plugin:latest
+    enableNodeLabeller: true
+    nodeLabellerImage: rocm/k8s-device-plugin:labeller-latest
+  driver:
+    blacklist: false
+    enable: false
+    image: docker.io/username/repo
+    version: 6.3.2
+  metricsExporter:
+    config:
+      name: gpu-config
+    enable: true
+    image: docker.io/rocm/device-metrics-exporter:v1.0.0
+    nodePort: 32500
+    port: 5000
+    serviceType: NodePort
+  selector:
+    feature.node.kubernetes.io/amd-gpu: "true"

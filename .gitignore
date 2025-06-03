@@ -1,10 +1,10 @@
 .devbox
 logs/*
 !logs/.gitkeep
-working/*
+#working/*
 output/*
 !output/.gitkeep
-stacks
+#stacks
 
 .krew
 devbox.lock

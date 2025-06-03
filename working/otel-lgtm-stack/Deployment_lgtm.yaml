@@ -1,0 +1,108 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lgtm
+  namespace: otel-lgtm-stack
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lgtm
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: lgtm
+    spec:
+      automountServiceAccountToken: true
+      containers:
+        - env:
+            - name: METHOD
+              value: WATCH
+            - name: LABEL
+              value: grafana_dashboard
+            - name: FOLDER
+              value: /tmp/dashboards
+            - name: RESOURCE
+              value: both
+            - name: FOLDER_ANNOTATION
+              value: grafana_folder
+            - name: REQ_USERNAME
+              value: admin
+            - name: REQ_PASSWORD
+              value: admin
+            - name: REQ_URL
+              value: http://localhost:3000/api/admin/provisioning/dashboards/reload
+            - name: REQ_METHOD
+              value: POST
+          image: quay.io/kiwigrid/k8s-sidecar:1.27.4
+          imagePullPolicy: IfNotPresent
+          name: grafana-sc-dashboard
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - mountPath: /tmp/dashboards
+              name: sc-dashboard-volume
+        - image: ghcr.io/silogen/otel-lgtm-custom:1.0.1
+          name: lgtm
+          ports:
+            - containerPort: 3000
+            - containerPort: 4317
+            - containerPort: 4318
+            - containerPort: 9090
+          readinessProbe:
+            exec:
+              command:
+                - cat
+                - /tmp/ready
+          resources:
+            limits:
+              memory: 8Gi
+            requests:
+              cpu: 500m
+              memory: 1024Mi
+          volumeMounts:
+            - mountPath: /data/tempo
+              name: tempo-data
+            - mountPath: /data/grafana
+              name: grafana-data
+            - mountPath: /data/loki
+              name: loki-data
+            - mountPath: /loki
+              name: loki-storage
+            - mountPath: /data/prometheus
+              name: p8s-storage
+            - mountPath: /tmp/dashboards
+              name: sc-dashboard-volume
+            - mountPath: /otel-lgtm/grafana/conf/provisioning/dashboards/sc-dashboardproviders.yaml
+              name: sc-dashboard-provider
+              subPath: provider.yaml
+      serviceAccountName: grafana-sidecar
+      volumes:
+        - name: tempo-data
+          persistentVolumeClaim:
+            claimName: tempo-pvc
+        - name: loki-data
+          persistentVolumeClaim:
+            claimName: loki-data-pvc
+        - name: grafana-data
+          persistentVolumeClaim:
+            claimName: grafana-pvc
+        - name: loki-storage
+          persistentVolumeClaim:
+            claimName: loki-storage-pvc
+        - name: p8s-storage
+          persistentVolumeClaim:
+            claimName: p8s-pvc
+        - emptyDir: {}
+          name: sc-dashboard-volume
+        - configMap:
+            name: grafana-config-dashboards
+          name: sc-dashboard-provider

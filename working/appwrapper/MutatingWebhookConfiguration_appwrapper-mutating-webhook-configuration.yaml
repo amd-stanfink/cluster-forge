@@ -1,0 +1,29 @@
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  labels:
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/name: appwrapper
+    control-plane: controller-manager
+  name: appwrapper-mutating-webhook-configuration
+webhooks:
+  - admissionReviewVersions:
+      - v1
+    clientConfig:
+      service:
+        name: appwrapper-webhook-service
+        namespace: appwrapper-system
+        path: /mutate-workload-codeflare-dev-v1beta2-appwrapper
+    failurePolicy: Fail
+    name: mappwrapper.kb.io
+    rules:
+      - apiGroups:
+          - workload.codeflare.dev
+        apiVersions:
+          - v1beta2
+        operations:
+          - CREATE
+        resources:
+          - appwrappers
+    sideEffects: None

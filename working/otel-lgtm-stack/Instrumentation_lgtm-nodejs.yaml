@@ -1,0 +1,15 @@
+---
+apiVersion: opentelemetry.io/v1alpha1
+kind: Instrumentation
+metadata:
+  name: lgtm-nodejs
+  namespace: otel-lgtm-stack
+spec:
+  exporter:
+    endpoint: http://lgtm.lgtm-stack.svc.cluster.local:4318
+  propagators:
+    - tracecontext
+    - baggage
+  sampler:
+    argument: "1"
+    type: parentbased_traceidratio

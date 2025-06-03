@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+data:
+  source.yaml: |
+    name: minio-operator
+    namespace: "minio-operator"
+    helm-chart-name: "operator"
+    helm-name: minio-operator
+    helm-url: "https://operator.min.io"
+    helm-version: "7.0.0"
+    values: minio-values.yaml
+kind: ConfigMap
+metadata:
+  name: clusterforge-minio-operator-info
+  namespace: minio-operator

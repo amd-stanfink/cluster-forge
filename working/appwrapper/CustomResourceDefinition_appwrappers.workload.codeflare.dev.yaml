@@ -1,0 +1,253 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.16.5
+  labels:
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/name: appwrapper
+    control-plane: controller-manager
+  name: appwrappers.workload.codeflare.dev
+spec:
+  group: workload.codeflare.dev
+  names:
+    kind: AppWrapper
+    listKind: AppWrapperList
+    plural: appwrappers
+    shortNames:
+      - aw
+    singular: appwrapper
+  scope: Namespaced
+  versions:
+    - additionalPrinterColumns:
+        - jsonPath: .status.phase
+          name: Status
+          type: string
+        - jsonPath: .status.conditions[?(@.type=="QuotaReserved")].status
+          name: Quota Reserved
+          type: string
+        - jsonPath: .status.conditions[?(@.type=="ResourcesDeployed")].status
+          name: Resources Deployed
+          type: string
+        - jsonPath: .status.conditions[?(@.type=="Unhealthy")].status
+          name: Unhealthy
+          type: string
+        - jsonPath: .metadata.creationTimestamp
+          name: Age
+          type: date
+      name: v1beta2
+      schema:
+        openAPIV3Schema:
+          properties:
+            apiVersion:
+              type: string
+            kind:
+              type: string
+            metadata:
+              type: object
+            spec:
+              properties:
+                components:
+                  items:
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        type: object
+                      podSetInfos:
+                        items:
+                          properties:
+                            annotations:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            labels:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            nodeSelector:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            schedulingGates:
+                              items:
+                                properties:
+                                  name:
+                                    type: string
+                                required:
+                                  - name
+                                type: object
+                              type: array
+                            tolerations:
+                              items:
+                                properties:
+                                  effect:
+                                    type: string
+                                  key:
+                                    type: string
+                                  operator:
+                                    type: string
+                                  tolerationSeconds:
+                                    format: int64
+                                    type: integer
+                                  value:
+                                    type: string
+                                type: object
+                              type: array
+                          type: object
+                        type: array
+                      podSets:
+                        items:
+                          properties:
+                            annotations:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            path:
+                              type: string
+                            replicas:
+                              format: int32
+                              type: integer
+                          required:
+                            - path
+                          type: object
+                        type: array
+                      template:
+                        type: object
+                        x-kubernetes-embedded-resource: true
+                        x-kubernetes-preserve-unknown-fields: true
+                    required:
+                      - template
+                    type: object
+                  type: array
+                managedBy:
+                  type: string
+                suspend:
+                  type: boolean
+              required:
+                - components
+              type: object
+            status:
+              properties:
+                componentStatus:
+                  items:
+                    properties:
+                      apiVersion:
+                        type: string
+                      conditions:
+                        items:
+                          properties:
+                            lastTransitionTime:
+                              format: date-time
+                              type: string
+                            message:
+                              maxLength: 32768
+                              type: string
+                            observedGeneration:
+                              format: int64
+                              minimum: 0
+                              type: integer
+                            reason:
+                              maxLength: 1024
+                              minLength: 1
+                              pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                              type: string
+                            status:
+                              enum:
+                                - "True"
+                                - "False"
+                                - Unknown
+                              type: string
+                            type:
+                              maxLength: 316
+                              pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                              type: string
+                          required:
+                            - lastTransitionTime
+                            - message
+                            - reason
+                            - status
+                            - type
+                          type: object
+                        type: array
+                        x-kubernetes-list-map-keys:
+                          - type
+                        x-kubernetes-list-type: map
+                      kind:
+                        type: string
+                      name:
+                        type: string
+                      podSets:
+                        items:
+                          properties:
+                            annotations:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            path:
+                              type: string
+                            replicas:
+                              format: int32
+                              type: integer
+                          required:
+                            - path
+                          type: object
+                        type: array
+                    required:
+                      - apiVersion
+                      - kind
+                      - name
+                      - podSets
+                    type: object
+                  type: array
+                conditions:
+                  items:
+                    properties:
+                      lastTransitionTime:
+                        format: date-time
+                        type: string
+                      message:
+                        maxLength: 32768
+                        type: string
+                      observedGeneration:
+                        format: int64
+                        minimum: 0
+                        type: integer
+                      reason:
+                        maxLength: 1024
+                        minLength: 1
+                        pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                        type: string
+                      status:
+                        enum:
+                          - "True"
+                          - "False"
+                          - Unknown
+                        type: string
+                      type:
+                        maxLength: 316
+                        pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                        type: string
+                    required:
+                      - lastTransitionTime
+                      - message
+                      - reason
+                      - status
+                      - type
+                    type: object
+                  type: array
+                  x-kubernetes-list-map-keys:
+                    - type
+                  x-kubernetes-list-type: map
+                phase:
+                  type: string
+                resettingCount:
+                  format: int32
+                  type: integer
+              type: object
+          type: object
+      served: true
+      storage: true
+      subresources:
+        status: {}
