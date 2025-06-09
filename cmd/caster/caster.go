@@ -191,7 +191,7 @@ func BuildAndPushImage(imageName string, filesDir string) error {
 	utils.CopyDir(filesDir+"/.git", tempDir+"/git/gitea-repositories/forge/clusterforge.git", false)
 	utils.CopyDir(tempDir, "stacks/latest", false)
 
-	cmd := exec.Command("docker", "buildx", "build", "-t", imageName, "--platform", "linux/amd64,linux/arm64", "-f", "Dockerfile", "--push", ".")
+	cmd := exec.Command("docker", "buildx", "build", "-t", imageName, "--platform", "linux/amd64", "-f", "Dockerfile", "--push", ".")
 
 	// Capture stdout and stderr
 	stdoutPipe, err := cmd.StdoutPipe()
