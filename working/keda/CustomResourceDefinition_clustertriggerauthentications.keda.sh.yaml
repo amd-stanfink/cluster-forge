@@ -1,0 +1,489 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.16.5
+  labels:
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/name: keda-operator
+    app.kubernetes.io/part-of: keda-operator
+    app.kubernetes.io/version: 2.17.0
+  name: clustertriggerauthentications.keda.sh
+spec:
+  group: keda.sh
+  names:
+    kind: ClusterTriggerAuthentication
+    listKind: ClusterTriggerAuthenticationList
+    plural: clustertriggerauthentications
+    shortNames:
+      - cta
+      - clustertriggerauth
+    singular: clustertriggerauthentication
+  scope: Cluster
+  versions:
+    - additionalPrinterColumns:
+        - jsonPath: .spec.podIdentity.provider
+          name: PodIdentity
+          type: string
+        - jsonPath: .spec.secretTargetRef[*].name
+          name: Secret
+          type: string
+        - jsonPath: .spec.env[*].name
+          name: Env
+          type: string
+        - jsonPath: .spec.hashiCorpVault.address
+          name: VaultAddress
+          type: string
+        - jsonPath: .status.scaledobjects
+          name: ScaledObjects
+          priority: 1
+          type: string
+        - jsonPath: .status.scaledjobs
+          name: ScaledJobs
+          priority: 1
+          type: string
+      name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          properties:
+            apiVersion:
+              type: string
+            kind:
+              type: string
+            metadata:
+              type: object
+            spec:
+              properties:
+                awsSecretManager:
+                  properties:
+                    credentials:
+                      properties:
+                        accessKey:
+                          properties:
+                            valueFrom:
+                              properties:
+                                secretKeyRef:
+                                  properties:
+                                    key:
+                                      type: string
+                                    name:
+                                      type: string
+                                  required:
+                                    - key
+                                    - name
+                                  type: object
+                              required:
+                                - secretKeyRef
+                              type: object
+                          required:
+                            - valueFrom
+                          type: object
+                        accessSecretKey:
+                          properties:
+                            valueFrom:
+                              properties:
+                                secretKeyRef:
+                                  properties:
+                                    key:
+                                      type: string
+                                    name:
+                                      type: string
+                                  required:
+                                    - key
+                                    - name
+                                  type: object
+                              required:
+                                - secretKeyRef
+                              type: object
+                          required:
+                            - valueFrom
+                          type: object
+                        accessToken:
+                          properties:
+                            valueFrom:
+                              properties:
+                                secretKeyRef:
+                                  properties:
+                                    key:
+                                      type: string
+                                    name:
+                                      type: string
+                                  required:
+                                    - key
+                                    - name
+                                  type: object
+                              required:
+                                - secretKeyRef
+                              type: object
+                          required:
+                            - valueFrom
+                          type: object
+                      required:
+                        - accessKey
+                        - accessSecretKey
+                      type: object
+                    podIdentity:
+                      properties:
+                        identityAuthorityHost:
+                          type: string
+                        identityId:
+                          type: string
+                        identityOwner:
+                          enum:
+                            - keda
+                            - workload
+                          type: string
+                        identityTenantId:
+                          type: string
+                        provider:
+                          enum:
+                            - azure-workload
+                            - gcp
+                            - aws
+                            - aws-eks
+                            - none
+                          type: string
+                        roleArn:
+                          type: string
+                      required:
+                        - provider
+                      type: object
+                    region:
+                      type: string
+                    secrets:
+                      items:
+                        properties:
+                          name:
+                            type: string
+                          parameter:
+                            type: string
+                          secretKey:
+                            type: string
+                          versionId:
+                            type: string
+                          versionStage:
+                            type: string
+                        required:
+                          - name
+                          - parameter
+                        type: object
+                      type: array
+                  required:
+                    - secrets
+                  type: object
+                azureKeyVault:
+                  properties:
+                    cloud:
+                      properties:
+                        activeDirectoryEndpoint:
+                          type: string
+                        keyVaultResourceURL:
+                          type: string
+                        type:
+                          type: string
+                      required:
+                        - type
+                      type: object
+                    credentials:
+                      properties:
+                        clientId:
+                          type: string
+                        clientSecret:
+                          properties:
+                            valueFrom:
+                              properties:
+                                secretKeyRef:
+                                  properties:
+                                    key:
+                                      type: string
+                                    name:
+                                      type: string
+                                  required:
+                                    - key
+                                    - name
+                                  type: object
+                              required:
+                                - secretKeyRef
+                              type: object
+                          required:
+                            - valueFrom
+                          type: object
+                        tenantId:
+                          type: string
+                      required:
+                        - clientId
+                        - clientSecret
+                        - tenantId
+                      type: object
+                    podIdentity:
+                      properties:
+                        identityAuthorityHost:
+                          type: string
+                        identityId:
+                          type: string
+                        identityOwner:
+                          enum:
+                            - keda
+                            - workload
+                          type: string
+                        identityTenantId:
+                          type: string
+                        provider:
+                          enum:
+                            - azure-workload
+                            - gcp
+                            - aws
+                            - aws-eks
+                            - none
+                          type: string
+                        roleArn:
+                          type: string
+                      required:
+                        - provider
+                      type: object
+                    secrets:
+                      items:
+                        properties:
+                          name:
+                            type: string
+                          parameter:
+                            type: string
+                          version:
+                            type: string
+                        required:
+                          - name
+                          - parameter
+                        type: object
+                      type: array
+                    vaultUri:
+                      type: string
+                  required:
+                    - secrets
+                    - vaultUri
+                  type: object
+                boundServiceAccountToken:
+                  items:
+                    properties:
+                      parameter:
+                        type: string
+                      serviceAccountName:
+                        type: string
+                    required:
+                      - parameter
+                      - serviceAccountName
+                    type: object
+                  type: array
+                configMapTargetRef:
+                  items:
+                    properties:
+                      key:
+                        type: string
+                      name:
+                        type: string
+                      parameter:
+                        type: string
+                    required:
+                      - key
+                      - name
+                      - parameter
+                    type: object
+                  type: array
+                env:
+                  items:
+                    properties:
+                      containerName:
+                        type: string
+                      name:
+                        type: string
+                      parameter:
+                        type: string
+                    required:
+                      - name
+                      - parameter
+                    type: object
+                  type: array
+                gcpSecretManager:
+                  properties:
+                    credentials:
+                      properties:
+                        clientSecret:
+                          properties:
+                            valueFrom:
+                              properties:
+                                secretKeyRef:
+                                  properties:
+                                    key:
+                                      type: string
+                                    name:
+                                      type: string
+                                  required:
+                                    - key
+                                    - name
+                                  type: object
+                              required:
+                                - secretKeyRef
+                              type: object
+                          required:
+                            - valueFrom
+                          type: object
+                      required:
+                        - clientSecret
+                      type: object
+                    podIdentity:
+                      properties:
+                        identityAuthorityHost:
+                          type: string
+                        identityId:
+                          type: string
+                        identityOwner:
+                          enum:
+                            - keda
+                            - workload
+                          type: string
+                        identityTenantId:
+                          type: string
+                        provider:
+                          enum:
+                            - azure-workload
+                            - gcp
+                            - aws
+                            - aws-eks
+                            - none
+                          type: string
+                        roleArn:
+                          type: string
+                      required:
+                        - provider
+                      type: object
+                    secrets:
+                      items:
+                        properties:
+                          id:
+                            type: string
+                          parameter:
+                            type: string
+                          version:
+                            type: string
+                        required:
+                          - id
+                          - parameter
+                        type: object
+                      type: array
+                  required:
+                    - secrets
+                  type: object
+                hashiCorpVault:
+                  properties:
+                    address:
+                      type: string
+                    authentication:
+                      type: string
+                    credential:
+                      properties:
+                        serviceAccount:
+                          type: string
+                        token:
+                          type: string
+                      type: object
+                    mount:
+                      type: string
+                    namespace:
+                      type: string
+                    role:
+                      type: string
+                    secrets:
+                      items:
+                        properties:
+                          key:
+                            type: string
+                          parameter:
+                            type: string
+                          path:
+                            type: string
+                          pkiData:
+                            properties:
+                              altNames:
+                                type: string
+                              commonName:
+                                type: string
+                              format:
+                                type: string
+                              ipSans:
+                                type: string
+                              otherSans:
+                                type: string
+                              ttl:
+                                type: string
+                              uriSans:
+                                type: string
+                            type: object
+                          type:
+                            type: string
+                        required:
+                          - key
+                          - parameter
+                          - path
+                        type: object
+                      type: array
+                  required:
+                    - address
+                    - authentication
+                    - secrets
+                  type: object
+                podIdentity:
+                  properties:
+                    identityAuthorityHost:
+                      type: string
+                    identityId:
+                      type: string
+                    identityOwner:
+                      enum:
+                        - keda
+                        - workload
+                      type: string
+                    identityTenantId:
+                      type: string
+                    provider:
+                      enum:
+                        - azure-workload
+                        - gcp
+                        - aws
+                        - aws-eks
+                        - none
+                      type: string
+                    roleArn:
+                      type: string
+                  required:
+                    - provider
+                  type: object
+                secretTargetRef:
+                  items:
+                    properties:
+                      key:
+                        type: string
+                      name:
+                        type: string
+                      parameter:
+                        type: string
+                    required:
+                      - key
+                      - name
+                      - parameter
+                    type: object
+                  type: array
+              type: object
+            status:
+              properties:
+                scaledjobs:
+                  type: string
+                scaledobjects:
+                  type: string
+              type: object
+          required:
+            - spec
+          type: object
+      served: true
+      storage: true
+      subresources:
+        status: {}

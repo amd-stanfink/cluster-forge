@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+data:
+  source.yaml: |
+    name: redis
+    namespace: "redis"
+    helm-chart-name: "redis"
+    helm-name: redis
+    helm-url: "https://charts.bitnami.com/bitnami"
+    helm-version: "20.3.0"
+    values: redis-dev-values.yaml # Insecure
+kind: ConfigMap
+metadata:
+  name: clusterforge-redis-info
+  namespace: redis

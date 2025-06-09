@@ -1,0 +1,15 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app: openobserve-collector
+  name: o2c-openobserve-collector
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: o2c-openobserve-collector
+subjects:
+  - kind: ServiceAccount
+    name: o2c-openobserve-collector
+    namespace: openobserve-collector

@@ -1,0 +1,21 @@
+---
+apiVersion: opentelemetry.io/v1alpha1
+kind: Instrumentation
+metadata:
+  name: openobserve-java
+  namespace: openobserve-collector
+spec:
+  exporter:
+    endpoint: http://o2c-openobserve-collector-gateway-collector.openobserve-collector.svc.cluster.local:4318
+  java:
+    env:
+      - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
+        value: http/protobuf
+      - name: OTEL_EXPORTER_OTLP_METRICS_PROTOCOL
+        value: http/protobuf
+  propagators:
+    - tracecontext
+    - baggage
+  sampler:
+    argument: "1"
+    type: parentbased_traceidratio

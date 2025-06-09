@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+data:
+  source.yaml: |
+    name: longhorn
+    namespace: "longhorn"
+    helm-chart-name: "longhorn"
+    helm-name: longhorn
+    helm-url: "https://charts.longhorn.io"
+    helm-version: "1.8.0"
+    values: values.yaml
+kind: ConfigMap
+metadata:
+  name: clusterforge-longhorn-info
+  namespace: longhorn

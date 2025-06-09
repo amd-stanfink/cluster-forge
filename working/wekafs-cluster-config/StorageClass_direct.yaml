@@ -1,0 +1,24 @@
+---
+allowVolumeExpansion: true
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: direct
+parameters:
+  accessType: rwx
+  csi.storage.k8s.io/controller-expand-secret-name: csi-wekafs-api-secret
+  csi.storage.k8s.io/controller-expand-secret-namespace: csi-wekafs
+  csi.storage.k8s.io/controller-publish-secret-name: csi-wekafs-api-secret
+  csi.storage.k8s.io/controller-publish-secret-namespace: csi-wekafs
+  csi.storage.k8s.io/node-publish-secret-name: csi-wekafs-api-secret
+  csi.storage.k8s.io/node-publish-secret-namespace: csi-wekafs
+  csi.storage.k8s.io/node-stage-secret-name: csi-wekafs-api-secret
+  csi.storage.k8s.io/node-stage-secret-namespace: csi-wekafs
+  csi.storage.k8s.io/provisioner-secret-name: csi-wekafs-api-secret
+  csi.storage.k8s.io/provisioner-secret-namespace: csi-wekafs
+  filesystemGroupName: silo
+  initialFilesystemSizeGB: "100"
+  volumeType: weka/v2
+provisioner: csi.weka.io
+reclaimPolicy: Delete
+volumeBindingMode: Immediate

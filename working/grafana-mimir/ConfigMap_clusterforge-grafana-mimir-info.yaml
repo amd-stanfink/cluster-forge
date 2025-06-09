@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+data:
+  source.yaml: |
+    name: grafana-mimir
+    namespace: "grafana-mimir"
+    helm-chart-name: "mimir-distributed"
+    helm-name: mimir
+    helm-url: "https://grafana.github.io/helm-charts"
+    values: grafana-mimir-values.yaml
+    helm-version: "5.2.1"
+kind: ConfigMap
+metadata:
+  name: clusterforge-grafana-mimir-info
+  namespace: grafana-mimir

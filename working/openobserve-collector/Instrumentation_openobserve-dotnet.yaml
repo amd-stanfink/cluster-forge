@@ -1,0 +1,21 @@
+---
+apiVersion: opentelemetry.io/v1alpha1
+kind: Instrumentation
+metadata:
+  name: openobserve-dotnet
+  namespace: openobserve-collector
+spec:
+  dotnet:
+    env:
+      - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
+        value: http/protobuf
+      - name: OTEL_EXPORTER_OTLP_METRICS_PROTOCOL
+        value: http/protobuf
+  exporter:
+    endpoint: http://o2c-openobserve-collector-gateway-collector.openobserve-collector.svc.cluster.local:4318
+  propagators:
+    - tracecontext
+    - baggage
+  sampler:
+    argument: "1"
+    type: parentbased_traceidratio

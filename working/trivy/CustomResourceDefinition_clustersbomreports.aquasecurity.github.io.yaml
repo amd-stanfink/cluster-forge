@@ -1,0 +1,352 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.14.0
+  name: clustersbomreports.aquasecurity.github.io
+spec:
+  group: aquasecurity.github.io
+  names:
+    kind: ClusterSbomReport
+    listKind: ClusterSbomReportList
+    plural: clustersbomreports
+    shortNames:
+      - clustersbom
+    singular: clustersbomreport
+  scope: Cluster
+  versions:
+    - additionalPrinterColumns:
+        - jsonPath: .report.artifact.repository
+          name: Repository
+          type: string
+        - jsonPath: .report.artifact.tag
+          name: Tag
+          type: string
+        - jsonPath: .report.scanner.name
+          name: Scanner
+          type: string
+        - jsonPath: .metadata.creationTimestamp
+          name: Age
+          type: date
+        - jsonPath: .report.summary.componentsCount
+          name: Components
+          priority: 1
+          type: integer
+        - jsonPath: .report.summary.dependenciesCount
+          name: Dependencies
+          priority: 1
+          type: integer
+      name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          properties:
+            apiVersion:
+              type: string
+            kind:
+              type: string
+            metadata:
+              type: object
+            report:
+              properties:
+                artifact:
+                  properties:
+                    digest:
+                      type: string
+                    mimeType:
+                      type: string
+                    repository:
+                      type: string
+                    tag:
+                      type: string
+                  type: object
+                components:
+                  properties:
+                    bomFormat:
+                      type: string
+                    components:
+                      items:
+                        properties:
+                          bom-ref:
+                            type: string
+                          group:
+                            type: string
+                          hashes:
+                            items:
+                              properties:
+                                alg:
+                                  type: string
+                                content:
+                                  type: string
+                              type: object
+                            type: array
+                          licenses:
+                            items:
+                              properties:
+                                expression:
+                                  type: string
+                                license:
+                                  properties:
+                                    id:
+                                      type: string
+                                    name:
+                                      type: string
+                                    url:
+                                      type: string
+                                  type: object
+                              type: object
+                            type: array
+                          name:
+                            type: string
+                          properties:
+                            items:
+                              properties:
+                                name:
+                                  type: string
+                                value:
+                                  type: string
+                              type: object
+                            type: array
+                          purl:
+                            type: string
+                          supplier:
+                            properties:
+                              contact:
+                                items:
+                                  properties:
+                                    email:
+                                      type: string
+                                    name:
+                                      type: string
+                                    phone:
+                                      type: string
+                                  type: object
+                                type: array
+                              name:
+                                type: string
+                              url:
+                                items:
+                                  type: string
+                                type: array
+                            type: object
+                          type:
+                            type: string
+                          version:
+                            type: string
+                        type: object
+                      type: array
+                    dependencies:
+                      items:
+                        properties:
+                          dependsOn:
+                            items:
+                              type: string
+                            type: array
+                          ref:
+                            type: string
+                        type: object
+                      type: array
+                    metadata:
+                      properties:
+                        component:
+                          properties:
+                            bom-ref:
+                              type: string
+                            group:
+                              type: string
+                            hashes:
+                              items:
+                                properties:
+                                  alg:
+                                    type: string
+                                  content:
+                                    type: string
+                                type: object
+                              type: array
+                            licenses:
+                              items:
+                                properties:
+                                  expression:
+                                    type: string
+                                  license:
+                                    properties:
+                                      id:
+                                        type: string
+                                      name:
+                                        type: string
+                                      url:
+                                        type: string
+                                    type: object
+                                type: object
+                              type: array
+                            name:
+                              type: string
+                            properties:
+                              items:
+                                properties:
+                                  name:
+                                    type: string
+                                  value:
+                                    type: string
+                                type: object
+                              type: array
+                            purl:
+                              type: string
+                            supplier:
+                              properties:
+                                contact:
+                                  items:
+                                    properties:
+                                      email:
+                                        type: string
+                                      name:
+                                        type: string
+                                      phone:
+                                        type: string
+                                    type: object
+                                  type: array
+                                name:
+                                  type: string
+                                url:
+                                  items:
+                                    type: string
+                                  type: array
+                              type: object
+                            type:
+                              type: string
+                            version:
+                              type: string
+                          type: object
+                        timestamp:
+                          type: string
+                        tools:
+                          properties:
+                            components:
+                              items:
+                                properties:
+                                  bom-ref:
+                                    type: string
+                                  group:
+                                    type: string
+                                  hashes:
+                                    items:
+                                      properties:
+                                        alg:
+                                          type: string
+                                        content:
+                                          type: string
+                                      type: object
+                                    type: array
+                                  licenses:
+                                    items:
+                                      properties:
+                                        expression:
+                                          type: string
+                                        license:
+                                          properties:
+                                            id:
+                                              type: string
+                                            name:
+                                              type: string
+                                            url:
+                                              type: string
+                                          type: object
+                                      type: object
+                                    type: array
+                                  name:
+                                    type: string
+                                  properties:
+                                    items:
+                                      properties:
+                                        name:
+                                          type: string
+                                        value:
+                                          type: string
+                                      type: object
+                                    type: array
+                                  purl:
+                                    type: string
+                                  supplier:
+                                    properties:
+                                      contact:
+                                        items:
+                                          properties:
+                                            email:
+                                              type: string
+                                            name:
+                                              type: string
+                                            phone:
+                                              type: string
+                                          type: object
+                                        type: array
+                                      name:
+                                        type: string
+                                      url:
+                                        items:
+                                          type: string
+                                        type: array
+                                    type: object
+                                  type:
+                                    type: string
+                                  version:
+                                    type: string
+                                type: object
+                              type: array
+                          type: object
+                      type: object
+                    serialNumber:
+                      type: string
+                    specVersion:
+                      type: string
+                    version:
+                      type: integer
+                  required:
+                    - bomFormat
+                    - specVersion
+                  type: object
+                registry:
+                  properties:
+                    server:
+                      type: string
+                  type: object
+                scanner:
+                  properties:
+                    name:
+                      type: string
+                    vendor:
+                      type: string
+                    version:
+                      type: string
+                  required:
+                    - name
+                    - vendor
+                    - version
+                  type: object
+                summary:
+                  properties:
+                    componentsCount:
+                      minimum: 0
+                      type: integer
+                    dependenciesCount:
+                      minimum: 0
+                      type: integer
+                  required:
+                    - componentsCount
+                    - dependenciesCount
+                  type: object
+                updateTimestamp:
+                  format: date-time
+                  type: string
+              required:
+                - artifact
+                - components
+                - scanner
+                - summary
+                - updateTimestamp
+              type: object
+          required:
+            - report
+          type: object
+      served: true
+      storage: true
+      subresources: {}

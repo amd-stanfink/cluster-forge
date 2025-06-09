@@ -1,0 +1,15 @@
+---
+apiVersion: opentelemetry.io/v1alpha1
+kind: Instrumentation
+metadata:
+  name: openobserve-nodejs
+  namespace: openobserve-collector
+spec:
+  exporter:
+    endpoint: http://o2c-openobserve-collector-gateway-collector.openobserve-collector.svc.cluster.local:4317
+  propagators:
+    - tracecontext
+    - baggage
+  sampler:
+    argument: "1"
+    type: parentbased_traceidratio
